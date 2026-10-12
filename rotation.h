@@ -56,9 +56,29 @@
 
 #include <stdint.h>
 
+#if defined(__has_include) && __has_include(<mathlib/mathlib.h>)
 #include <mathlib/mathlib.h>
+#else
+// In the extracted PX4_mathlib repository this header is at the repository root.
+#include <mathlib.h>
+#endif
+
+#if defined(__has_include) && __has_include(<mathlib/math/Functions.hpp>)
+#include <mathlib/math/Functions.hpp>
+#else
+#include <math/Functions.hpp>
+#endif
 #include <matrix/math.hpp>
-#include <px4_platform_common/defines.h>
+
+// Keep this header usable outside PX4 while retaining exported symbols when
+// built with GCC or Clang as a shared library.
+#if defined(__GNUC__) || defined(__clang__)
+#define PX4_CONVERSION_EXPORT __attribute__((visibility("default")))
+#elif defined(_WIN32) && defined(PX4_CONVERSION_BUILD_SHARED)
+#define PX4_CONVERSION_EXPORT __declspec(dllexport)
+#else
+#define PX4_CONVERSION_EXPORT
+#endif
 
 /**
  * @enum Rotation
@@ -199,7 +219,7 @@ static constexpr rot_lookup_t rot_lookup[ROTATION_MAX] = {
  * @param rot The predefined rotation identifier.
  * @return matrix::Dcmf 3×3 rotation matrix.
  */
-__EXPORT matrix::Dcmf get_rot_matrix(enum Rotation rot);
+PX4_CONVERSION_EXPORT matrix::Dcmf get_rot_matrix(enum Rotation rot);
 
 /**
  * @fn get_rot_quaternion
@@ -210,7 +230,7 @@ __EXPORT matrix::Dcmf get_rot_matrix(enum Rotation rot);
  * @param rot The predefined rotation identifier.
  * @return matrix::Quatf Unit quaternion representing the rotation.
  */
-__EXPORT matrix::Quatf get_rot_quaternion(enum Rotation rot);
+PX4_CONVERSION_EXPORT matrix::Quatf get_rot_quaternion(enum Rotation rot);
 
 /**
  * @fn rotate_3i
@@ -225,7 +245,7 @@ __EXPORT matrix::Quatf get_rot_quaternion(enum Rotation rot);
  * @param y Reference to the Y component (modified).
  * @param z Reference to the Z component (modified).
  */
-__EXPORT void rotate_3i(enum Rotation rot, int16_t &x, int16_t &y, int16_t &z);
+PX4_CONVERSION_EXPORT void rotate_3i(enum Rotation rot, int16_t &x, int16_t &y, int16_t &z);
 
 /**
  * @fn rotate_3f
@@ -240,7 +260,7 @@ __EXPORT void rotate_3i(enum Rotation rot, int16_t &x, int16_t &y, int16_t &z);
  * @param y Reference to the Y component (modified).
  * @param z Reference to the Z component (modified).
  */
-__EXPORT void rotate_3f(enum Rotation rot, float &x, float &y, float &z);
+PX4_CONVERSION_EXPORT void rotate_3f(enum Rotation rot, float &x, float &y, float &z);
 
 /**
  * @fn rotate_3

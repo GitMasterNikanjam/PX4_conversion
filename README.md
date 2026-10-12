@@ -1,6 +1,6 @@
 # Vector Rotation Library
 
-This library provides efficient 3D vector rotation functions for sensor and board orientation handling in the PX4 flight stack. It maps a predefined board mounting rotation (e.g., from an IMU or compass) to the airframe coordinate system.
+This library provides efficient 3D vector rotation functions for sensor and board orientation handling. It maps a predefined board mounting rotation (e.g., from an IMU or compass) to the airframe coordinate system and can be used outside PX4.
 
 ## Features
 
@@ -12,7 +12,7 @@ This library provides efficient 3D vector rotation functions for sensor and boar
 
 ## Coordinate Frame Convention
 
-- Rotations are applied in **ZYX order** (yaw, then pitch, then roll).
+- Rotations use the matrix library's Euler convention: roll, pitch, yaw angles are passed to `Eulerf`, which constructs the corresponding ZYX rotation.
 - The library transforms a vector from the **board (sensor) frame** to the **airframe frame**.
 - Euler angles in the lookup table are stored in **degrees** (roll, pitch, yaw).
 
@@ -85,11 +85,23 @@ rotate_3f(ROTATION_ROLL_90, accel[0], accel[1], accel[2]);
 
 The `rot_lookup` table (defined in `rotation.cpp`) maps each `Rotation` enum to integer roll, pitch, and yaw angles in degrees. This table is used by `get_rot_matrix()` and `get_rot_quaternion()`.
 
-## Notes
+## Dependencies and Notes
 
 - All functions are reentrant and thread‑safe.
-- The library depends on PX4’s `mathlib` and `matrix` libraries.
+- The implementation depends on the extracted `PX4_mathlib` and `PX4_matrix` headers, but no longer requires PX4 platform headers.
 - For custom rotations not listed in the enum, you must manually construct a rotation matrix or quaternion using `ROTATION_CUSTOM` and your own Euler angles.
+- Invalid values (including `ROTATION_CUSTOM`, which has no stored angles) produce an identity matrix/quaternion; vector rotation leaves the input unchanged.
+
+## Standalone CMake Build
+
+The CMake target expects `PX4_conversion`, `PX4_mathlib`, and `PX4_matrix` to be sibling directories by default:
+
+```powershell
+cmake -S PX4_conversion -B build/PX4_conversion
+cmake --build build/PX4_conversion
+```
+
+If the dependency repositories are elsewhere, pass their locations with `-DPX4_CONVERSION_MATHLIB_DIR=...` and `-DPX4_CONVERSION_MATRIX_DIR=...` when configuring. Consumers can link the target as `PX4::conversion`.
 
 ## License
 
