@@ -68,7 +68,7 @@
 #else
 #include <math/Functions.hpp>
 #endif
-#include <matrix/math.hpp>
+#include <src/math.hpp>
 
 // Keep this header usable outside PX4 while retaining exported symbols when
 // built with GCC or Clang as a shared library.
